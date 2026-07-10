@@ -1,47 +1,57 @@
-<script setup lang="ts">
-import HelloWorld from './components/HelloWorld.vue'
-import TheWelcome from './components/TheWelcome.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-    </div>
-  </header>
-
-  <main>
-    <TheWelcome />
-  </main>
+  <div id="app">
+    <nav>
+      <router-link to="/">🏠 Home</router-link>
+      <router-link to="/questions">❓ Questions</router-link>
+      <router-link to="/history">📚 History</router-link>
+    </nav>
+    <main>
+      <router-view />
+    </main>
+    <ToastContainer />
+  </div>
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
+<script setup lang="ts">
+import ToastContainer from '@/components/common/ToastContainer.vue'
+</script>
+
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
+#app {
+  font-family: Arial, sans-serif;
+  min-height: 100vh;
 }
 
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
-  }
+nav {
+  background: #42b883;
+  padding: 15px 20px;
+  display: flex;
+  gap: 20px;
+}
 
-  .logo {
-    margin: 0 2rem 0 0;
-  }
+nav a {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+}
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+nav a:hover {
+  text-decoration: underline;
+}
+
+nav a.router-link-active {
+  text-decoration: underline;
+}
+
+main {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 </style>
