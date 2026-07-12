@@ -287,18 +287,18 @@ h2 {
 }
 
 .file-drop-zone:hover:not(.disabled) {
-  border-color: #42b883;
+  border-color: #1976d2;
   background: #f0faf5;
 }
 
 .file-drop-zone.dragover {
-  border-color: #42b883;
+  border-color: #1976d2;
   background: #e8f5ee;
   transform: scale(1.01);
 }
 
 .file-drop-zone.has-file {
-  border-color: #42b883;
+  border-color: #1976d2;
   background: #f0faf5;
   padding: 20px;
 }
@@ -383,7 +383,7 @@ h2 {
 }
 
 .btn-primary {
-  background: #42b883;
+  background: #1976d2;
   color: white;
   border: none;
   padding: 12px 32px;

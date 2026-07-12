@@ -1,39 +1,95 @@
-import apiClient from './client'
+import api from './axios'
 
-export interface ExamHistory {
-  id: number
+export interface HistorySummary {
+  totalExams: number
+  totalQuestionsAnswered: number
+  averageScore: number
+  bestScore: number
+  worstScore: number
+  recentExams: {
+    id: number
+    title: string
+    subjectName: string | null
+    score: number
+    correctAnswers: number
+    totalQuestions: number
+    finishedAt: string
+  }[]
+}
+
+export interface HistoryExam {
+  examId: number
   title: string
-  subjectName: string
+  subjectName: string | null
   totalQuestions: number
   correctAnswers: number
   wrongAnswers: number
   score: number
-  status: string
   startedAt: string
   finishedAt: string
   timeSpentInMinutes: number
 }
 
-export interface ExamHistorySummary {
+export interface HistoryExamDetail extends HistoryExam {
+  questions: {
+    number: number
+    questionId: number
+    statement: string
+    alternatives: {
+      alternativeId: number
+      description: string
+      isCorrect: boolean
+    }[]
+    yourAnswer: string[]
+    correctAnswer: string[]
+    isCorrect: boolean
+    questionType: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE'
+  }[]
+}
+
+export interface SubjectStats {
+  subjectId: number
+  subjectName: string
   totalExams: number
-  totalQuestionsAnswered: number
-  totalCorrectAnswers: number
+  totalQuestions: number
+  correctAnswers: number
   averageScore: number
   bestScore: number
-  worstScore: number
-  recentExams: ExamHistory[]
+}
+
+export interface PageResponse<T> {
+  content: T[]
+  pageable: {
+    pageNumber: number
+    pageSize: number
+    totalPages: number
+    totalElements: number
+  }
+  totalPages: number
+  totalElements: number
+  size: number
+  number: number
+  first: boolean
+  last: boolean
+  empty: boolean
 }
 
 export const historyApi = {
-  getHistory: (page: number = 0, size: number = 20) =>
-    apiClient.get<ExamHistory[]>(`/history?page=${page}&size=${size}`),
+  getSummary: () => {
+    return api.get<HistorySummary>('/history/summary')
+  },
 
-  getSummary: () =>
-    apiClient.get<ExamHistorySummary>('/history/summary'),
+  getExams: (page: number = 0, size: number = 10, sortBy: string = 'finishedAt', sortDirection: string = 'desc') => {
+    return api.get<PageResponse<HistoryExam>>('/history/exams', {
+      params: { page, size, sortBy, sortDirection }
+    })
+  },
 
-  getBySubject: (subjectId: number) =>
-    apiClient.get<ExamHistory[]>(`/history/subject/${subjectId}`),
+  getExamDetail: (examId: number) => {
+    return api.get<HistoryExamDetail>(`/history/exams/${examId}`)
+  },
 
-  getById: (examId: number) =>
-    apiClient.get<ExamHistory>(`/history/${examId}`)
+  getSubjectStats: () => {
+    return api.get<SubjectStats[]>('/history/subjects')
+  }
 }

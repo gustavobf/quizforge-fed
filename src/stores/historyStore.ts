@@ -1,33 +1,56 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { historyApi, type ExamHistory, type ExamHistorySummary } from '@/api/historyApi'
+import { historyApi, type HistorySummary, type HistoryExam, type HistoryExamDetail, type SubjectStats, type PageResponse } from '@/api/historyApi'
 
 export const useHistoryStore = defineStore('history', () => {
-  const history = ref<ExamHistory[]>([])
-  const summary = ref<ExamHistorySummary | null>(null)
+  const history = ref<HistoryExam[]>([])
+  const summary = ref<HistorySummary | null>(null)
+  const subjectStats = ref<SubjectStats[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
   const currentPage = ref(0)
-  const pageSize = ref(20)
-  const totalItems = ref(0)
+  const pageSize = ref(10)
+  const totalElements = ref(0)
+  const totalPages = ref(0)
+  const sortBy = ref('finishedAt')
+  const sortDirection = ref('desc')
 
   const hasMore = computed(() => {
-    return history.value.length < totalItems.value
+    return history.value.length < totalElements.value
   })
 
-  async function loadHistory(page: number = 0, size: number = 20) {
+  const isEmpty = computed(() => {
+    return !isLoading.value && history.value.length === 0 && !error.value
+  })
+
+  async function loadExams(page: number = 0, size: number = 10, sortByField?: string, sortDir?: string) {
     isLoading.value = true
     error.value = null
 
     try {
-      const response = await historyApi.getHistory(page, size)
+      const response = await historyApi.getExams(
+        page, 
+        size, 
+        sortByField || sortBy.value, 
+        sortDir || sortDirection.value
+      )
+      
+      const data = response.data
+      
       if (page === 0) {
-        history.value = response.data
+        history.value = data.content
       } else {
-        history.value = [...history.value, ...response.data]
+        history.value = [...history.value, ...data.content]
       }
+      
       currentPage.value = page
-      totalItems.value = response.data.length > 0 ? response.data.length : 0
+      pageSize.value = size
+      totalElements.value = data.totalElements
+      totalPages.value = data.totalPages
+      
+      if (sortByField) sortBy.value = sortByField
+      if (sortDir) sortDirection.value = sortDir
+      
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to load history'
       throw err
@@ -51,27 +74,27 @@ export const useHistoryStore = defineStore('history', () => {
     }
   }
 
-  async function loadBySubject(subjectId: number) {
+  async function loadSubjectStats() {
     isLoading.value = true
     error.value = null
 
     try {
-      const response = await historyApi.getBySubject(subjectId)
-      history.value = response.data
+      const response = await historyApi.getSubjectStats()
+      subjectStats.value = response.data
     } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to load history by subject'
+      error.value = err.response?.data?.message || 'Failed to load subject statistics'
       throw err
     } finally {
       isLoading.value = false
     }
   }
 
-  async function loadById(examId: number): Promise<ExamHistory> {
+  async function loadExamDetail(examId: number): Promise<HistoryExamDetail> {
     isLoading.value = true
     error.value = null
 
     try {
-      const response = await historyApi.getById(examId)
+      const response = await historyApi.getExamDetail(examId)
       return response.data
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to load exam details'
@@ -81,27 +104,57 @@ export const useHistoryStore = defineStore('history', () => {
     }
   }
 
+  async function loadMore() {
+    if (!hasMore.value || isLoading.value) return
+    await loadExams(currentPage.value + 1, pageSize.value)
+  }
+
+  async function refresh() {
+    history.value = []
+    await loadExams(0, pageSize.value)
+    await loadSummary()
+  }
+
   function reset() {
     history.value = []
     summary.value = null
+    subjectStats.value = []
     error.value = null
     currentPage.value = 0
-    totalItems.value = 0
+    totalElements.value = 0
+    totalPages.value = 0
+    isLoading.value = false
+  }
+
+  function setSort(sortByField: string, sortDir: string) {
+    sortBy.value = sortByField
+    sortDirection.value = sortDir
+    loadExams(0, pageSize.value, sortByField, sortDir)
   }
 
   return {
     history,
     summary,
+    subjectStats,
     isLoading,
     error,
     currentPage,
     pageSize,
-    totalItems,
+    totalElements,
+    totalPages,
+    sortBy,
+    sortDirection,
+    
     hasMore,
-    loadHistory,
+    isEmpty,
+    
+    loadExams,
     loadSummary,
-    loadBySubject,
-    loadById,
-    reset
+    loadSubjectStats,
+    loadExamDetail,
+    loadMore,
+    refresh,
+    reset,
+    setSort
   }
 })

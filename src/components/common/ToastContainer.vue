@@ -15,12 +15,9 @@
 </template>
 
 <script setup lang="ts">
-import { useToastStore } from '@/stores/toastStore'
-import { storeToRefs } from 'pinia'
+import { useToast } from '@/composables/useToast'
 
-const toastStore = useToastStore()
-const { toasts } = storeToRefs(toastStore)
-const { removeToast } = toastStore
+const { toasts, removeToast } = useToast()
 </script>
 
 <style scoped>

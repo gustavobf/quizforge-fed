@@ -1,195 +1,195 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { examApi, type ExamQuestionResponse, type ExamResultResponse } from '@/api/examApi'
+import { examApi } from '@/api/examApi'
+import type { CreateExamResponse, ExamResultResponse, Question } from '@/types/exam.types'
 
 export const useExamStore = defineStore('exam', () => {
   const examId = ref<number | null>(null)
-  const currentQuestion = ref<ExamQuestionResponse | null>(null)
-  const totalQuestions = ref<number>(0)
-  const currentIndex = ref<number>(0)
-  const questions = ref<ExamQuestionResponse[]>([])
-  const answers = ref<Map<number, number>>(new Map())
+  const examData = ref<CreateExamResponse | null>(null)
+  const questions = ref<Question[]>([])
+  const currentIndex = ref(0)
+  const totalQuestions = ref(0)
+  const answers = ref<Record<number, number[]>>({})
   const result = ref<ExamResultResponse | null>(null)
   const isLoading = ref(false)
-  const error = ref<string | null>(null)
-  const isFinishing = ref(false)
+  const answeredCount = ref(0)
 
+  const currentQuestion = computed(() => {
+    if (!questions.value.length) return null
+    return questions.value[currentIndex.value] || null
+  })
+
+  const isCurrentQuestionAnswered = computed(() => {
+    if (!currentQuestion.value) return false
+    const questionId = currentQuestion.value.questionId
+    const answer = answers.value[questionId]
+    return answer && answer.length > 0
+  })
+
+  const currentAnswers = computed(() => {
+    if (!currentQuestion.value) return []
+    return answers.value[currentQuestion.value.questionId] || []
+  })
+
+  const isExamFinished = computed(() => !!result.value)
   const progress = computed(() => {
     if (totalQuestions.value === 0) return 0
-    return Math.round((answers.value.size / totalQuestions.value) * 100)
+    return Math.round((answeredCount.value / totalQuestions.value) * 100)
   })
 
-  const isAllAnswered = computed(() => {
-    return answers.value.size === totalQuestions.value
-  })
+  function reset() {
+    examId.value = null
+    examData.value = null
+    questions.value = []
+    currentIndex.value = 0
+    totalQuestions.value = 0
+    answers.value = {}
+    result.value = null
+    isLoading.value = false
+    answeredCount.value = 0
+    
+    localStorage.removeItem('examData')
+  }
 
-  const hasNext = computed(() => {
-    return currentIndex.value < totalQuestions.value - 1
-  })
+  function setExamData(data: CreateExamResponse) {
+    examData.value = data
+    examId.value = data.examId
+    questions.value = data.questions
+    totalQuestions.value = data.totalQuestions
+    
+    const initialAnswers: Record<number, number[]> = {}
+    data.questions.forEach(q => {
+      initialAnswers[q.questionId] = []
+    })
+    answers.value = initialAnswers
+    currentIndex.value = 0
+    answeredCount.value = 0
+    result.value = null 
+    
+    localStorage.setItem('examData', JSON.stringify(data))
+  }
 
-  function setExamId(id: number) {
-    examId.value = id
+  function restoreFromLocalStorage(): boolean {
+    const stored = localStorage.getItem('examData')
+    if (stored) {
+      try {
+        const data = JSON.parse(stored) as CreateExamResponse
+        setExamData(data)
+        return true
+      } catch (e) {
+        console.error('Error restoring exam data:', e)
+      }
+    }
+    return false
   }
 
   async function createExam(title: string, quantity: number, subjectId?: number) {
     isLoading.value = true
-    error.value = null
-    
     try {
-      const response = await examApi.create({ title, quantity, subjectId })
-      
-      examId.value = response.data.examId
-      totalQuestions.value = response.data.totalQuestions
-      currentIndex.value = 0
-      questions.value = []
-      answers.value = new Map()
-      result.value = null
-      isFinishing.value = false
-      
-      return response.data
-    } catch (err: any) {
-      error.value = err.response?.data?.message || 'Failed to create exam'
-      throw err
-    } finally {
-      isLoading.value = false
-    }
-  }
-
-  async function loadCurrentQuestion() {
-    if (!examId.value) {
-      console.error('No examId set')
-      return
-    }
-
-    if (isFinishing.value) {
-      console.log('Skipping loadCurrentQuestion - exam is finishing')
-      return
-    }
-
-    isLoading.value = true
-    try {
-      const response = await examApi.getCurrentQuestion(examId.value)
+      const response = await examApi.createExam({ title, subjectId, quantity })
       const data = response.data
-      
-      if (data.totalQuestions) {
-        totalQuestions.value = data.totalQuestions
-      }
-      
-      if (data.currentQuestionNumber) {
-        currentIndex.value = data.currentQuestionNumber - 1
-      }
-      
-      currentQuestion.value = data
-      questions.value[currentIndex.value] = data
-      
-      if (data.isAnswered && data.selectedAlternativeId) {
-        const questionNumber = data.currentQuestionNumber || currentIndex.value + 1
-        answers.value.set(questionNumber, data.selectedAlternativeId)
-      }
-      
-      console.log('Loaded question:', {
-        currentIndex: currentIndex.value,
-        totalQuestions: totalQuestions.value,
-        isAnswered: data.isAnswered,
-        currentQuestionNumber: data.currentQuestionNumber,
-        answersSize: answers.value.size
-      })
-    } catch (err) {
-      error.value = 'Failed to load question'
-      throw err
+      setExamData(data)
+      return data
+    } catch (error) {
+      console.error('Create exam error:', error)
+      throw error
     } finally {
       isLoading.value = false
     }
   }
 
-  async function answerQuestion(alternativeId: number) {
-    if (!examId.value || !currentQuestion.value) return
-
-    const questionNumber = currentQuestion.value.currentQuestionNumber || currentIndex.value + 1
+  function selectAnswer(alternativeIds: number[]) {
+    if (!currentQuestion.value) return
     
-    try {
-      await examApi.answerQuestion(examId.value, alternativeId)
-      
-      answers.value.set(questionNumber, alternativeId)
-      
-      if (currentQuestion.value) {
-        currentQuestion.value.isAnswered = true
-        currentQuestion.value.selectedAlternativeId = alternativeId
-      }
-      
-      if (questions.value[currentIndex.value]) {
-        questions.value[currentIndex.value].isAnswered = true
-        questions.value[currentIndex.value].selectedAlternativeId = alternativeId
-      }
-      
-      console.log('Answer saved. Progress:', answers.value.size, '/', totalQuestions.value)
-      
-      if (answers.value.size === totalQuestions.value) {
-        console.log('All questions answered! Not loading next question.')
-        return
-      }
-      
-      if (!isFinishing.value) {
-        console.log('Loading next question...')
-        await loadCurrentQuestion()
-      }
-    } catch (err) {
-      error.value = 'Failed to answer question'
-      throw err
+    const questionId = currentQuestion.value.questionId
+    console.log('Salvando resposta para questão:', questionId, alternativeIds)
+    
+    answers.value = {
+      ...answers.value,
+      [questionId]: [...alternativeIds]
+    }
+    
+    let count = 0
+    Object.values(answers.value).forEach(arr => {
+      if (arr && arr.length > 0) count++
+    })
+    answeredCount.value = count
+    
+    console.log('Respostas atualizadas:', answers.value)
+    console.log('Questões respondidas:', answeredCount.value)
+  }
+
+  function goToQuestion(index: number) {
+    if (index >= 0 && index < totalQuestions.value) {
+      currentIndex.value = index
+    }
+  }
+
+  function nextQuestion() {
+    if (currentIndex.value < totalQuestions.value - 1) {
+      currentIndex.value++
+    }
+  }
+
+  function previousQuestion() {
+    if (currentIndex.value > 0) {
+      currentIndex.value--
     }
   }
 
   async function finishExam() {
-    if (!examId.value) return
+    if (!examId.value) {
+      throw new Error('No exam ID set')
+    }
 
-    isFinishing.value = true
-    console.log('Finishing exam...')
+    console.log('Finalizando exame com respostas:', answers.value)
+    
+    const total = totalQuestions.value
+    const answered = answeredCount.value
+    
+    if (answered < total) {
+      console.warn(`Apenas ${answered} de ${total} questões respondidas`)
+    }
 
     isLoading.value = true
     try {
-      const response = await examApi.finishExam(examId.value)
+      const response = await examApi.finishExam(examId.value, { answers: answers.value })
       result.value = response.data
-      console.log('Exam finished successfully!')
+      console.log('Resultado do exame:', result.value)
       return response.data
-    } catch (err) {
-      error.value = 'Failed to finish exam'
-      throw err
+    } catch (error) {
+      console.error('Finish exam error:', error)
+      throw error
     } finally {
       isLoading.value = false
-      isFinishing.value = false
     }
-  }
-
-  function reset() {
-    examId.value = null
-    currentQuestion.value = null
-    totalQuestions.value = 0
-    currentIndex.value = 0
-    questions.value = []
-    answers.value = new Map()
-    result.value = null
-    error.value = null
-    isFinishing.value = false
   }
 
   return {
     examId,
-    currentQuestion,
-    totalQuestions,
-    currentIndex,
+    examData,
     questions,
+    currentIndex,
+    totalQuestions,
     answers,
     result,
     isLoading,
-    error,
+    answeredCount,
+    
+    currentQuestion,
+    isCurrentQuestionAnswered,
+    currentAnswers,
+    isExamFinished,
     progress,
-    isAllAnswered,
-    hasNext,
-    setExamId,
+    
+    reset,
+    setExamData,
+    restoreFromLocalStorage,
     createExam,
-    loadCurrentQuestion,
-    answerQuestion,
-    finishExam,
-    reset
+    selectAnswer,
+    goToQuestion,
+    nextQuestion,
+    previousQuestion,
+    finishExam
   }
 })

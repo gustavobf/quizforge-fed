@@ -1,7 +1,7 @@
 <template>
   <div class="home">
     <div class="home-header">
-      <h1>🏠 QuizForge</h1>
+      <h1>QuizForge</h1>
       <p class="subtitle">Test your knowledge with our exam simulator!</p>
     </div>
 
@@ -32,14 +32,18 @@
 
           <div class="form-group">
             <label for="quantity">Number of Questions</label>
-            <input
-              id="quantity"
-              v-model.number="quantity"
-              type="number"
-              min="1"
-              max="50"
-              required
-            />
+            <div class="quantity-group">
+              <input
+                id="quantity"
+                v-model.number="quantity"
+                type="number"
+                min="1"
+                max="200"
+                required
+                class="no-spinner"
+              />
+              <span class="quantity-hint">{{ quantity }} / 200</span>
+            </div>
           </div>
 
           <button type="submit" :disabled="isLoading" class="btn-primary">
@@ -152,29 +156,6 @@ async function loadHistorySummary() {
   }
 }
 
-async function startExam() {
-  if (isLoading.value) return
-  
-  isLoading.value = true
-  error.value = ''
-
-  try {
-    const exam = await examStore.createExam(
-      title.value || 'New Exam',
-      quantity.value,
-      subjectId.value
-    )
-    
-    showSuccess('Exam created successfully!')
-    router.push(`/exam/${exam.examId}`)
-  } catch (err: any) {
-    error.value = err.response?.data?.message || 'Failed to create exam'
-    showError(error.value)
-  } finally {
-    isLoading.value = false
-  }
-}
-
 function getScoreClass(score: number): string {
   if (score >= 80) return 'score-high'
   if (score >= 60) return 'score-medium'
@@ -189,7 +170,34 @@ function formatDate(date: string): string {
   })
 }
 
+async function startExam() {
+  if (isLoading.value) return
+  
+  isLoading.value = true
+  error.value = ''
+
+  try {
+    examStore.reset()
+    
+    const exam = await examStore.createExam(
+      title.value || 'New Exam',
+      quantity.value,
+      subjectId.value
+    )
+    
+    showSuccess('Exam created successfully!')
+    router.push(`/exam/${exam.examId}`)
+  } catch (err: any) {
+    console.error('Error creating exam:', err)
+    error.value = err.response?.data?.message || 'Failed to create exam'
+    showError(error.value)
+  } finally {
+    isLoading.value = false
+  }
+}
+
 onMounted(() => {
+  examStore.reset()
   loadSubjects()
   loadHistorySummary()
 })
@@ -253,6 +261,46 @@ onMounted(() => {
   font-size: 14px;
 }
 
+.quantity-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.quantity-group input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.quantity-group input:focus {
+  border-color: #1976d2;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+}
+
+.quantity-hint {
+  font-size: 14px;
+  color: #6c757d;
+  white-space: nowrap;
+  min-width: 60px;
+  font-weight: 600;
+}
+
+.no-spinner::-webkit-inner-spin-button,
+.no-spinner::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinner {
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+
 .form-group input,
 .form-group select {
   width: 100%;
@@ -263,19 +311,15 @@ onMounted(() => {
   transition: border-color 0.2s;
 }
 
-.form-group input::placeholder {
-  color: #adb5bd;
-}
-
 .form-group input:focus,
 .form-group select:focus {
-  border-color: #42b883;
+  border-color: #1976d2;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(66, 184, 131, 0.1);
+  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
 }
 
 .btn-primary {
-  background: #42b883;
+  background: #1976d2;
   color: white;
   border: none;
   padding: 12px 32px;
@@ -287,7 +331,7 @@ onMounted(() => {
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: #359268;
+  background: #1565c0;
 }
 
 .btn-primary:disabled {
@@ -352,7 +396,7 @@ onMounted(() => {
 }
 
 .view-all {
-  color: #42b883;
+  color: #1976d2;
   text-decoration: none;
   font-weight: 600;
 }
@@ -374,7 +418,6 @@ onMounted(() => {
   padding: 14px 16px;
   border-radius: 8px;
   border: 1px solid #f0f0f0;
-  pointer-events: none;
 }
 
 .recent-info {
