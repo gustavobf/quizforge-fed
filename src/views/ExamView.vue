@@ -177,14 +177,6 @@ import { useRouter } from "vue-router";
 import { useExamStore } from "@/stores/examStore";
 import { useToast } from "@/composables/useToast";
 
-function formatAnswers(answers: string[] | string): string {
-  if (!answers) return "Not answered";
-  if (Array.isArray(answers)) {
-    return answers.join(", ") || "Not answered";
-  }
-  return answers || "Not answered";
-}
-
 const props = defineProps<{
   id: string;
 }>();
@@ -207,6 +199,9 @@ const isLastQuestion = computed(
 const isMultipleChoice = computed(() => {
   if (!examStore.currentQuestion) return false;
   const question = examStore.currentQuestion;
+  if (question.questionType) {
+    return question.questionType === "MULTIPLE_CHOICE";
+  }
   return (
     question.alternatives.length > 4 ||
     question.statement.toLowerCase().includes("select all") ||
@@ -229,33 +224,24 @@ const isAlternativeSelected = (alternativeId: number) => {
 };
 
 const toggleAlternative = (alternativeId: number) => {
-  console.log("Toggle alternativa:", alternativeId);
-  console.log("Respostas atuais:", examStore.currentAnswers);
-
   const currentAnswers = examStore.currentAnswers || [];
   let newAnswers: number[];
 
   if (isMultipleChoice.value) {
     if (currentAnswers.includes(alternativeId)) {
       newAnswers = currentAnswers.filter((id) => id !== alternativeId);
-      console.log("Removendo alternativa");
     } else {
       newAnswers = [...currentAnswers, alternativeId];
-      console.log("Adicionando alternativa");
     }
   } else {
     if (currentAnswers.includes(alternativeId)) {
       newAnswers = [];
-      console.log("Desselecionando");
     } else {
       newAnswers = [alternativeId];
-      console.log("Selecionando única");
     }
   }
 
-  console.log("Novas respostas:", newAnswers);
   examStore.selectAnswer(newAnswers);
-  console.log("Respostas no store após seleção:", examStore.answers);
 };
 
 async function finishExam() {
@@ -287,6 +273,40 @@ function goHome() {
   examStore.reset();
   localStorage.removeItem("examData");
   router.push("/");
+}
+
+function formatAnswers(answers: any): string {
+  if (!answers) return "Not answered";
+
+  if (typeof answers === "string") {
+    try {
+      let cleaned = answers
+        .replace(/^\[/, "")
+        .replace(/\]$/, "")
+        .replace(/"/g, "")
+        .trim();
+
+      if (!cleaned) return "Not answered";
+
+      if (cleaned.includes(",")) {
+        return cleaned
+          .split(",")
+          .map((s) => s.trim())
+          .join(", ");
+      }
+
+      return cleaned;
+    } catch (e) {
+      return answers || "Not answered";
+    }
+  }
+
+  if (Array.isArray(answers)) {
+    if (answers.length === 0) return "Not answered";
+    return answers.join(", ");
+  }
+
+  return String(answers) || "Not answered";
 }
 
 watch(
@@ -323,40 +343,6 @@ onMounted(() => {
     }
   }
 
-  function formatAnswers(answers: any): string {
-    if (!answers) return "Not answered";
-
-    if (typeof answers === "string") {
-      try {
-        let cleaned = answers
-          .replace(/^\[/, "")
-          .replace(/\]$/, "")
-          .replace(/"/g, "")
-          .trim();
-
-        if (!cleaned) return "Not answered";
-
-        if (cleaned.includes(",")) {
-          return cleaned
-            .split(",")
-            .map((s) => s.trim())
-            .join(", ");
-        }
-
-        return cleaned;
-      } catch (e) {
-        return answers || "Not answered";
-      }
-    }
-
-    if (Array.isArray(answers)) {
-      if (answers.length === 0) return "Not answered";
-      return answers.join(", ");
-    }
-
-    return String(answers) || "Not answered";
-  }
-
   if (!examStore.examData) {
     errorMessage.value = "No exam data found. Please create a new exam.";
     return;
@@ -379,7 +365,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* ... estilos existentes ... */
 .exam-container {
   max-width: 900px;
   margin: 0 auto;

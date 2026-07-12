@@ -8,6 +8,7 @@ export interface Question {
   statement: string;
   alternatives: Alternative[];
   orderNumber: number;
+  questionType: 'SINGLE_CHOICE' | 'MULTIPLE_CHOICE';
 }
 
 export interface CreateExamResponse {
