@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: quizforge-frontend
+    container_name: quizforge-fed
     ports:
       - "3000:80"
     restart: unless-stopped
