@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { subjectApi, type Subject, type CreateSubjectRequest } from '@/api/subjectApi'
+import { subjectService } from '@/services/subjectService'
+import type { Subject, CreateSubjectRequest } from '@/types/subject.types'
 import { useToast } from '@/composables/useToast'
 
 export const useSubjectStore = defineStore('subject', () => {
@@ -15,7 +16,7 @@ export const useSubjectStore = defineStore('subject', () => {
     error.value = null
     validationErrors.value = {}
     try {
-      const response = await subjectApi.getAll()
+      const response = await subjectService.getAll()
       subjects.value = response.data
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to load subjects'
@@ -31,7 +32,7 @@ export const useSubjectStore = defineStore('subject', () => {
     validationErrors.value = {}
     
     try {
-      const response = await subjectApi.create(data)
+      const response = await subjectService.create(data)
       subjects.value.push(response.data)
       showSuccess('Subject created successfully!')
       return response.data
@@ -63,7 +64,7 @@ export const useSubjectStore = defineStore('subject', () => {
     validationErrors.value = {}
     
     try {
-      const response = await subjectApi.update(id, data)
+      const response = await subjectService.update(id, data)
       const index = subjects.value.findIndex(s => s.id === id)
       if (index !== -1) {
         subjects.value[index] = response.data
@@ -93,7 +94,7 @@ export const useSubjectStore = defineStore('subject', () => {
     isLoading.value = true
     error.value = null
     try {
-      await subjectApi.delete(id)
+      await subjectService.delete(id)
       subjects.value = subjects.value.filter(s => s.id !== id)
       showSuccess('Subject deleted successfully!')
     } catch (err: any) {

@@ -1,5 +1,3 @@
-import api from './axios'
-
 export interface HistorySummary {
   totalExams: number
   totalQuestionsAnswered: number
@@ -72,24 +70,4 @@ export interface PageResponse<T> {
   first: boolean
   last: boolean
   empty: boolean
-}
-
-export const historyApi = {
-  getSummary: () => {
-    return api.get<HistorySummary>('/history/summary')
-  },
-
-  getExams: (page: number = 0, size: number = 10, sortBy: string = 'finishedAt', sortDirection: string = 'desc') => {
-    return api.get<PageResponse<HistoryExam>>('/history/exams', {
-      params: { page, size, sortBy, sortDirection }
-    })
-  },
-
-  getExamDetail: (examId: number) => {
-    return api.get<HistoryExamDetail>(`/history/exams/${examId}`)
-  },
-
-  getSubjectStats: () => {
-    return api.get<SubjectStats[]>('/history/subjects')
-  }
 }

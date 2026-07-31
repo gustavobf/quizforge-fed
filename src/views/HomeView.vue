@@ -117,12 +117,14 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useExamStore } from '@/stores/examStore'
 import { useHistoryStore } from '@/stores/historyStore'
-import { subjectApi, type Subject } from '@/api/subjectApi'
+import { useSubjectStore } from '@/stores/subjectStore'
 import { useToast } from '@/composables/useToast'
+import { formatDate, getScoreClass } from '@/utils/formatters'
 
 const router = useRouter()
 const examStore = useExamStore()
 const historyStore = useHistoryStore()
+const subjectStore = useSubjectStore()
 const { showError, showSuccess } = useToast()
 
 const title = ref('New Exam')
@@ -131,66 +133,35 @@ const quantity = ref(10)
 const isLoading = ref(false)
 const isLoadingSummary = ref(false)
 const error = ref('')
-const subjects = ref<Subject[]>([])
 
 const summary = computed(() => historyStore.summary)
 const recentExams = computed(() => summary.value?.recentExams || [])
-
-async function loadSubjects() {
-  try {
-    const response = await subjectApi.getAll()
-    subjects.value = response.data
-  } catch (err) {
-    showError('Failed to load subjects')
-  }
-}
+const subjects = computed(() => subjectStore.subjects)
 
 async function loadHistorySummary() {
   isLoadingSummary.value = true
   try {
     await historyStore.loadSummary()
-  } catch (err) {
+  } catch {
     showError('Failed to load history')
   } finally {
     isLoadingSummary.value = false
   }
 }
 
-function getScoreClass(score: number): string {
-  if (score >= 80) return 'score-high'
-  if (score >= 60) return 'score-medium'
-  return 'score-low'
-}
-
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric'
-  })
-}
-
 async function startExam() {
   if (isLoading.value) return
-  
   isLoading.value = true
   error.value = ''
-
   try {
     examStore.reset()
-    
-    const exam = await examStore.createExam(
-      title.value || 'New Exam',
-      quantity.value,
-      subjectId.value
-    )
-    
+    const exam = await examStore.createExam(title.value || 'New Exam', quantity.value, subjectId.value)
     showSuccess('Exam created successfully!')
     router.push(`/exam/${exam.examId}`)
-  } catch (err: any) {
-    console.error('Error creating exam:', err)
-    error.value = err.response?.data?.message || 'Failed to create exam'
-    showError(error.value)
+  } catch (err: unknown) {
+    const message = (err as { response?: { data?: { message?: string } } })?.response?.data?.message || 'Failed to create exam'
+    error.value = message
+    showError(message)
   } finally {
     isLoading.value = false
   }
@@ -198,7 +169,7 @@ async function startExam() {
 
 onMounted(() => {
   examStore.reset()
-  loadSubjects()
+  subjectStore.loadSubjects()
   loadHistorySummary()
 })
 </script>

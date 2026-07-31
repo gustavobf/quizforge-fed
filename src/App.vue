@@ -11,12 +11,12 @@
     <main>
       <router-view />
     </main>
-    <ToastContainer />
+    <AppToast />
   </div>
 </template>
 
 <script setup lang="ts">
-import ToastContainer from '@/components/common/ToastContainer.vue'
+import AppToast from '@/components/common/AppToast.vue'
 </script>
 
 <style>
@@ -72,7 +72,6 @@ main {
   margin: 0 auto;
 }
 
-/* Estilos globais para botões */
 .btn-primary {
   background: #1976d2;
   color: white;
@@ -110,7 +109,6 @@ main {
   background: #d0d0d0;
 }
 
-/* Links */
 a {
   color: #1976d2;
   text-decoration: none;
@@ -120,7 +118,6 @@ a:hover {
   text-decoration: underline;
 }
 
-/* Inputs */
 input:focus, 
 select:focus, 
 textarea:focus {
@@ -129,7 +126,6 @@ textarea:focus {
   box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1) !important;
 }
 
-/* Loading spinner */
 .spinner {
   width: 40px;
   height: 40px;

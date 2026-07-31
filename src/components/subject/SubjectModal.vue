@@ -1,16 +1,16 @@
 <template>
   <div v-if="isOpen" class="modal-overlay" @click.self="close">
-    <div class="modal">
+    <div class="modal" role="dialog" :aria-label="isEditing ? 'Edit Subject' : 'New Subject'">
       <div class="modal-header">
         <h2>{{ isEditing ? 'Edit Subject' : 'New Subject' }}</h2>
-        <button @click="close" class="close-btn">✕</button>
+        <button @click="close" class="close-btn" aria-label="Close dialog">✕</button>
       </div>
 
       <form @submit.prevent="handleSubmit" class="modal-body">
         <div class="form-group" :class="{ 'has-error': hasError('name') }">
-          <label for="name">Name *</label>
+          <label for="subject-name">Name *</label>
           <input
-            id="name"
+            id="subject-name"
             v-model="formData.name"
             type="text"
             placeholder="Enter subject name..."
@@ -19,15 +19,15 @@
             @input="clearError('name')"
           />
           <small class="char-count">{{ formData.name.length }}/100</small>
-          <div v-if="getError('name')" class="error-message">
+          <div v-if="getError('name')" class="field-error" role="alert">
             {{ getError('name') }}
           </div>
         </div>
 
         <div class="form-group" :class="{ 'has-error': hasError('description') }">
-          <label for="description">Description</label>
+          <label for="subject-description">Description</label>
           <textarea
-            id="description"
+            id="subject-description"
             v-model="formData.description"
             placeholder="Enter subject description (optional)..."
             rows="4"
@@ -35,7 +35,7 @@
             @input="clearError('description')"
           />
           <small class="char-count">{{ formData.description.length }}/500</small>
-          <div v-if="getError('description')" class="error-message">
+          <div v-if="getError('description')" class="field-error" role="alert">
             {{ getError('description') }}
           </div>
         </div>
@@ -43,7 +43,7 @@
         <div class="modal-actions">
           <button type="button" @click="close" class="btn-secondary">Cancel</button>
           <button type="submit" :disabled="isLoading || subjectStore.isLoading" class="btn-primary">
-            {{ isLoading || subjectStore.isLoading ? 'Saving...' : (isEditing ? 'Update' : 'Create') }}
+            {{ isLoading || subjectStore.isLoading ? 'Saving...' : isEditing ? 'Update' : 'Create' }}
           </button>
         </div>
       </form>
@@ -54,19 +54,16 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue'
 import { useSubjectStore } from '@/stores/subjectStore'
+import type { Subject } from '@/types/subject.types'
 
 const props = defineProps<{
   isOpen: boolean
-  editingSubject?: {
-    id: number
-    name: string
-    description: string | null
-  } | null
+  editingSubject?: Subject | null
 }>()
 
 const emit = defineEmits<{
-  (e: 'close'): void
-  (e: 'success'): void
+  close: []
+  success: []
 }>()
 
 const subjectStore = useSubjectStore()
@@ -74,28 +71,22 @@ const isLoading = ref(false)
 
 const isEditing = computed(() => !!props.editingSubject)
 
-const formData = ref({
-  name: '',
-  description: ''
-})
+const formData = ref({ name: '', description: '' })
 
 watch(
   () => props.isOpen,
-  (newVal) => {
-    if (newVal && props.editingSubject) {
+  (opened) => {
+    subjectStore.clearValidationErrors()
+    if (opened && props.editingSubject) {
       formData.value = {
         name: props.editingSubject.name,
-        description: props.editingSubject.description || ''
+        description: props.editingSubject.description || '',
       }
-    } else if (newVal) {
-      formData.value = {
-        name: '',
-        description: ''
-      }
+    } else if (opened) {
+      formData.value = { name: '', description: '' }
     }
-    subjectStore.clearValidationErrors()
   },
-  { immediate: true }
+  { immediate: true },
 )
 
 function hasError(field: string): boolean {
@@ -107,8 +98,11 @@ function getError(field: string): string | null {
 }
 
 function clearError(field: string) {
-  const errors = { ...subjectStore.validationErrors }
-  delete errors[field]
+  if (subjectStore.validationErrors[field]) {
+    const updated = { ...subjectStore.validationErrors }
+    delete updated[field]
+    subjectStore.validationErrors = updated
+  }
 }
 
 async function handleSubmit() {
@@ -116,7 +110,6 @@ async function handleSubmit() {
     subjectStore.validationErrors = { name: 'Name is required' }
     return
   }
-
   if (formData.value.name.length < 3) {
     subjectStore.validationErrors = { name: 'Name must be at least 3 characters' }
     return
@@ -124,24 +117,21 @@ async function handleSubmit() {
 
   isLoading.value = true
   try {
+    const payload = {
+      name: formData.value.name.trim(),
+      description: formData.value.description.trim() || undefined,
+    }
     if (isEditing.value && props.editingSubject) {
-      await subjectStore.updateSubject(props.editingSubject.id, {
-        name: formData.value.name.trim(),
-        description: formData.value.description.trim() || undefined
-      })
+      await subjectStore.updateSubject(props.editingSubject.id, payload)
     } else {
-      await subjectStore.createSubject({
-        name: formData.value.name.trim(),
-        description: formData.value.description.trim() || undefined
-      })
+      await subjectStore.createSubject(payload)
     }
     emit('success')
     close()
-  } catch (error) {
-    if (Object.keys(subjectStore.validationErrors).length > 0) {
-      return
+  } catch {
+    if (Object.keys(subjectStore.validationErrors).length === 0) {
+      close()
     }
-    close()
   } finally {
     isLoading.value = false
   }
@@ -156,22 +146,20 @@ function close() {
 <style scoped>
 .modal-overlay {
   position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  padding: 20px;
 }
 
 .modal {
   background: white;
   border-radius: 12px;
   max-width: 500px;
-  width: 90%;
+  width: 100%;
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
@@ -198,6 +186,8 @@ function close() {
   cursor: pointer;
   color: #6c757d;
   padding: 0 8px;
+  line-height: 1;
+  transition: color 0.2s;
 }
 
 .close-btn:hover {
@@ -232,8 +222,8 @@ function close() {
   border: 1px solid #ddd;
   border-radius: 6px;
   font-size: 14px;
-  transition: border-color 0.2s;
   font-family: inherit;
+  transition: border-color 0.2s;
 }
 
 .form-group input:focus,
@@ -256,7 +246,7 @@ function close() {
   text-align: right;
 }
 
-.error-message {
+.field-error {
   color: #dc3545;
   font-size: 12px;
   margin-top: 4px;

@@ -16,7 +16,6 @@
     </div>
 
     <template v-else>
-      <!-- Summary Cards -->
       <div class="summary-cards">
         <div class="summary-card">
           <span class="card-value">{{ summary?.totalExams || 0 }}</span>
@@ -40,7 +39,6 @@
         </div>
       </div>
 
-      <!-- Recent Exams -->
       <div v-if="summary?.recentExams?.length" class="recent-exams">
         <h2>Recent Exams</h2>
         <div class="recent-list">
@@ -67,7 +65,6 @@
         </div>
       </div>
 
-      <!-- All Exams -->
       <div class="history-section">
         <div class="section-header">
           <h2>All Exams</h2>
@@ -126,7 +123,6 @@
       </div>
     </template>
 
-    <!-- Exam Detail Modal -->
     <ExamDetailModal
       :visible="showModal"
       :examId="selectedExamId"
@@ -139,6 +135,7 @@
 import { ref, onMounted } from 'vue'
 import { useHistoryStore } from '@/stores/historyStore'
 import { storeToRefs } from 'pinia'
+import { formatDate, getScoreClass } from '@/utils/formatters'
 import ExamDetailModal from '@/components/history/ExamDetailModal.vue'
 
 const historyStore = useHistoryStore()
@@ -164,29 +161,9 @@ function closeModal() {
   selectedExamId.value = null
 }
 
-function formatDate(date: string): string {
-  if (!date) return '-'
-  return new Date(date).toLocaleDateString('en-US', {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  })
-}
-
-function getScoreClass(score: number): string {
-  if (score >= 80) return 'score-high'
-  if (score >= 60) return 'score-medium'
-  return 'score-low'
-}
-
 onMounted(async () => {
   historyStore.reset()
-  await Promise.all([
-    loadExams(0, 10),
-    loadSummary()
-  ])
+  await Promise.all([loadExams(0, 10), loadSummary()])
 })
 </script>
 

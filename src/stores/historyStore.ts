@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import { historyApi, type HistorySummary, type HistoryExam, type HistoryExamDetail, type SubjectStats, type PageResponse } from '@/api/historyApi'
+import { historyService } from '@/services/historyService'
+import type { HistorySummary, HistoryExam, HistoryExamDetail, SubjectStats, PageResponse } from '@/types/history.types'
 
 export const useHistoryStore = defineStore('history', () => {
   const history = ref<HistoryExam[]>([])
@@ -28,11 +29,11 @@ export const useHistoryStore = defineStore('history', () => {
     error.value = null
 
     try {
-      const response = await historyApi.getExams(
-        page, 
-        size, 
-        sortByField || sortBy.value, 
-        sortDir || sortDirection.value
+      const response = await historyService.getExams(
+        page,
+        size,
+        sortByField || sortBy.value,
+        sortDir || sortDirection.value,
       )
       
       const data = response.data
@@ -64,7 +65,7 @@ export const useHistoryStore = defineStore('history', () => {
     error.value = null
 
     try {
-      const response = await historyApi.getSummary()
+      const response = await historyService.getSummary()
       summary.value = response.data
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to load summary'
@@ -79,7 +80,7 @@ export const useHistoryStore = defineStore('history', () => {
     error.value = null
 
     try {
-      const response = await historyApi.getSubjectStats()
+      const response = await historyService.getSubjectStats()
       subjectStats.value = response.data
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to load subject statistics'
@@ -94,7 +95,7 @@ export const useHistoryStore = defineStore('history', () => {
     error.value = null
 
     try {
-      const response = await historyApi.getExamDetail(examId)
+      const response = await historyService.getExamDetail(examId)
       return response.data
     } catch (err: any) {
       error.value = err.response?.data?.message || 'Failed to load exam details'

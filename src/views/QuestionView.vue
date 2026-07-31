@@ -13,23 +13,21 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import QuestionImport from '@/components/question/QuestionImport.vue'
-import { templateApi } from '@/api/templateApi'
+import { templateService } from '@/services/templateService'
 import { useToast } from '@/composables/useToast'
 
 const { showSuccess, showError } = useToast()
 const isDownloading = ref(false)
 
 function onImportSuccess(count: number) {
-  console.log(`Imported ${count} questions`)
+  void count
 }
 
 async function downloadTemplate() {
   if (isDownloading.value) return
-  
   isDownloading.value = true
   try {
-    const response = await templateApi.downloadTemplate()
-    
+    const response = await templateService.downloadTemplate()
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
@@ -38,10 +36,8 @@ async function downloadTemplate() {
     link.click()
     link.remove()
     window.URL.revokeObjectURL(url)
-    
     showSuccess('Template downloaded successfully!')
-  } catch (error: any) {
-    console.error('Error downloading template:', error)
+  } catch {
     showError('Failed to download template')
   } finally {
     isDownloading.value = false

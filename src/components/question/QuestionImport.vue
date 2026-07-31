@@ -1,33 +1,36 @@
-<script setup>
+<script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useToast } from '@/composables/useToast'
-import { subjectApi } from '@/api/subjectApi'
-import { questionApi } from '@/api/questionApi'
+import { subjectService } from '@/services/subjectService'
+import { questionService } from '@/services/questionService'
+import type { Subject } from '@/types/subject.types'
 
 const { showError, showSuccess } = useToast()
-const subjects = ref([])
-const selectedSubjectId = ref('')
-const selectedFile = ref(null)
+
+const subjects = ref<Subject[]>([])
+const selectedSubjectId = ref<string>('')
+const selectedFile = ref<File | null>(null)
 const isDragging = ref(false)
 const isLoading = ref(false)
-const importResult = ref(null)
-const fileInputRef = ref(null)
+const importResult = ref<{ success: boolean; message: string; count?: number } | null>(null)
+const fileInputRef = ref<HTMLInputElement | null>(null)
 
-const emit = defineEmits(['imported'])
+const emit = defineEmits<{ imported: [count: number] }>()
 
 const isFormValid = computed(() => selectedSubjectId.value && selectedFile.value)
 
 async function loadSubjects() {
   try {
-    const response = await subjectApi.getAll()
+    const response = await subjectService.getAll()
     subjects.value = response.data
-  } catch (error) {
+  } catch {
     showError('Failed to load subjects')
   }
 }
 
-function handleFileUpload(event) {
-  const file = event.target.files?.[0]
+function handleFileUpload(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
   if (file) {
     if (validateFile(file)) {
       selectedFile.value = file
@@ -39,34 +42,30 @@ function handleFileUpload(event) {
   isDragging.value = false
 }
 
-function validateFile(file) {
+function validateFile(file: File): boolean {
   const validTypes = [
     'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.ms-excel'
+    'application/vnd.ms-excel',
   ]
-  const validExtensions = ['.xlsx', '.xls']
-  const fileExtension = '.' + file.name.split('.').pop()
-  
-  return validTypes.includes(file.type) || validExtensions.includes(fileExtension)
+  const ext = '.' + file.name.split('.').pop()
+  return validTypes.includes(file.type) || ['.xlsx', '.xls'].includes(ext)
 }
 
-function handleDragOver(event) {
+function handleDragOver(event: DragEvent) {
   event.preventDefault()
   isDragging.value = true
 }
 
-function handleDragLeave(event) {
+function handleDragLeave(event: DragEvent) {
   event.preventDefault()
   isDragging.value = false
 }
 
-function handleDrop(event) {
+function handleDrop(event: DragEvent) {
   event.preventDefault()
   isDragging.value = false
-  
-  const files = event.dataTransfer?.files
-  if (files && files.length > 0) {
-    const file = files[0]
+  const file = event.dataTransfer?.files?.[0]
+  if (file) {
     if (validateFile(file)) {
       selectedFile.value = file
     } else {
@@ -82,71 +81,48 @@ function removeFile() {
 }
 
 function resetFileInput() {
-  if (fileInputRef.value) {
-    fileInputRef.value.value = ''
-  }
+  if (fileInputRef.value) fileInputRef.value.value = ''
 }
 
-function formatFileSize(bytes) {
+function formatFileSize(bytes: number): string {
   if (bytes < 1024) return bytes + ' B'
   if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
   return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
 }
 
 async function importQuestions() {
-  if (!isFormValid.value) {
+  if (!isFormValid.value || !selectedFile.value) {
     showError('Please select a subject and a file')
     return
   }
-
   isLoading.value = true
   importResult.value = null
-
   try {
-    const response = await questionApi.importQuestions(
+    const response = await questionService.importQuestions(
       selectedFile.value,
-      Number(selectedSubjectId.value)
+      Number(selectedSubjectId.value),
     )
-
-    const data = response.data
-    const count = data.totalQuestionsImported || 0
-    
-    importResult.value = {
-      success: true,
-      message: 'Questions imported successfully!',
-      count: count
-    }
-    
+    const count = response.data.totalQuestionsImported || 0
+    importResult.value = { success: true, message: 'Questions imported successfully!', count }
     showSuccess(`Successfully imported ${count} questions!`)
     emit('imported', count)
-    
     selectedFile.value = null
     resetFileInput()
-    
-  } catch (error) {
+  } catch (err: unknown) {
     let errorMessage = 'Failed to import questions'
-    
+    const error = err as { response?: { status?: number; data?: { message?: string; error?: string; details?: string } }; request?: unknown; message?: string }
     if (error.response) {
-      const errorData = error.response.data
-      errorMessage = errorData.message || errorData.error || errorData.details || errorMessage
-      
-      if (error.response.status === 400) {
-        errorMessage = 'Invalid request. Please check the file format.'
-      } else if (error.response.status === 413) {
-        errorMessage = 'File is too large. Maximum size is 10MB.'
-      } else if (error.response.status === 502) {
-        errorMessage = 'Backend service is unavailable. Please try again later.'
-      }
+      const { status, data } = error.response
+      errorMessage = data?.message || data?.error || data?.details || errorMessage
+      if (status === 400) errorMessage = 'Invalid request. Please check the file format.'
+      else if (status === 413) errorMessage = 'File is too large. Maximum size is 10MB.'
+      else if (status === 502) errorMessage = 'Backend service is unavailable. Please try again later.'
     } else if (error.request) {
       errorMessage = 'No response from server. Please check your connection.'
-    } else {
-      errorMessage = error.message || errorMessage
+    } else if (error.message) {
+      errorMessage = error.message
     }
-    
-    importResult.value = {
-      success: false,
-      message: errorMessage
-    }
+    importResult.value = { success: false, message: errorMessage }
     showError(errorMessage)
   } finally {
     isLoading.value = false
@@ -160,9 +136,7 @@ function resetForm() {
   resetFileInput()
 }
 
-onMounted(() => {
-  loadSubjects()
-})
+onMounted(() => { loadSubjects() })
 </script>
 
 <template>

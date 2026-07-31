@@ -8,13 +8,13 @@
     </div>
 
     <div v-if="subjectStore.isLoading" class="loading">
-      <div class="spinner"></div>
+      <AppSpinner />
       <p>Loading subjects...</p>
     </div>
 
     <div v-else-if="subjectStore.error" class="error">
       {{ subjectStore.error }}
-      <button @click="loadSubjects" class="btn-secondary">Retry</button>
+      <button @click="subjectStore.loadSubjects()" class="btn-secondary">Retry</button>
     </div>
 
     <div v-else-if="subjectStore.subjects.length === 0" class="empty">
@@ -45,25 +45,24 @@
       </div>
     </div>
 
-    <CreateSubjectModal
+    <SubjectModal
       :is-open="isModalOpen"
       :editing-subject="editingSubject"
       @close="closeModal"
-      @success="onSuccess"
+      @success="subjectStore.loadSubjects()"
     />
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { onMounted } from 'vue'
 import { useSubjectStore } from '@/stores/subjectStore'
-import { useToast } from '@/composables/useToast'
-import CreateSubjectModal from './CreateSubjectModal.vue'
-import type { Subject } from '@/api/subjectApi'
+import { ref } from 'vue'
+import SubjectModal from './SubjectModal.vue'
+import AppSpinner from '@/components/common/AppSpinner.vue'
+import type { Subject } from '@/types/subject.types'
 
 const subjectStore = useSubjectStore()
-const { showError, showSuccess } = useToast()
-
 const isModalOpen = ref(false)
 const editingSubject = ref<Subject | null>(null)
 
@@ -82,25 +81,17 @@ function closeModal() {
   editingSubject.value = null
 }
 
-function onSuccess() {
-  loadSubjects()
-}
-
 async function confirmDelete(subject: Subject) {
   if (confirm(`Are you sure you want to delete "${subject.name}"?`)) {
     try {
       await subjectStore.deleteSubject(subject.id)
-    } catch (error) {
+    } catch {
     }
   }
 }
 
-async function loadSubjects() {
-  await subjectStore.loadSubjects()
-}
-
 onMounted(() => {
-  loadSubjects()
+  subjectStore.loadSubjects()
 })
 </script>
 
