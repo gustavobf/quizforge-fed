@@ -42,9 +42,33 @@
       </p>
 
       <div class="demo-credentials">
-        <p><strong>Demo Users:</strong></p>
-        <p>Admin: admin@quizforge.local / Admin@123</p>
-        <p>User: user@quizforge.local / User@123</p>
+        <div class="demo-header">
+          <span>📋 Demo Users</span>
+        </div>
+        
+        <div class="credential-item">
+          <div class="credential-content">
+            <span class="credential-label">Admin Account</span>
+            <span class="credential-value">admin@quizforge.local</span>
+            <span class="credential-value">Admin@123</span>
+          </div>
+          <div class="credential-actions">
+            <button @click="copyCred('admin@quizforge.local')" type="button" class="copy-btn" title="Copy email">📧</button>
+            <button @click="copyCred('Admin@123')" type="button" class="copy-btn" title="Copy password">🔑</button>
+          </div>
+        </div>
+
+        <div class="credential-item">
+          <div class="credential-content">
+            <span class="credential-label">User Account</span>
+            <span class="credential-value">user@quizforge.local</span>
+            <span class="credential-value">User@123</span>
+          </div>
+          <div class="credential-actions">
+            <button @click="copyCred('user@quizforge.local')" type="button" class="copy-btn" title="Copy email">📧</button>
+            <button @click="copyCred('User@123')" type="button" class="copy-btn" title="Copy password">🔑</button>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -67,6 +91,15 @@ const password = ref('')
 const isLoading = ref(false)
 const apiError = ref('')
 const errors = ref<Record<string, string>>({})
+
+async function copyCred(text: string) {
+  try {
+    await navigator.clipboard.writeText(text)
+    showSuccess('Copied to clipboard!')
+  } catch {
+    showError('Failed to copy')
+  }
+}
 
 async function handleLogin() {
   errors.value = {}
@@ -115,109 +148,125 @@ async function handleLogin() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 50%, #0d47a1 100%);
-  padding: 20px;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+  padding: 80px 20px;
   min-height: 100vh;
+}
+
+.auth-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1), transparent),
+              radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1), transparent);
+  pointer-events: none;
 }
 
 .auth-card {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
   padding: 50px;
   width: 100%;
-  max-width: 420px;
-  backdrop-filter: blur(10px);
+  max-width: 450px;
+  position: relative;
+  z-index: 1;
 }
 
 h1 {
   text-align: center;
   margin-bottom: 40px;
-  color: var(--color-text);
+  color: #1f2937;
   font-size: 32px;
   font-weight: 700;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   display: flex;
   flex-direction: column;
 }
 
 label {
-  font-weight: 500;
-  margin-bottom: 8px;
+  font-weight: 600;
+  margin-bottom: 10px;
   color: var(--color-text);
-  font-size: 15px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 input {
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
+  padding: 14px 16px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 15px;
-  transition: all 0.3s;
-  background: #f9f9f9;
+  transition: all var(--transition);
+  background: var(--color-bg);
 }
 
 input:focus {
   outline: none;
   border-color: var(--color-primary);
   background: white;
-  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.1);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
 
 .error-text {
   color: var(--color-danger);
   font-size: 13px;
-  margin-top: 6px;
+  margin-top: 8px;
   font-weight: 500;
 }
 
 .error-box {
-  background: #ffebee;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
   color: var(--color-danger);
-  padding: 14px 16px;
-  border-radius: 6px;
-  margin-bottom: 20px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
   font-size: 14px;
-  border-left: 5px solid var(--color-danger);
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  border-left: 4px solid var(--color-danger);
+  font-weight: 500;
 }
 
 .btn-primary {
   width: 100%;
-  padding: 13px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  padding: 14px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
-  margin-bottom: 20px;
+  transition: all var(--transition);
+  margin-bottom: 24px;
   font-size: 15px;
-  box-shadow: 0 4px 15px rgba(25, 118, 210, 0.3);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(25, 118, 210, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none;
 }
 
 .auth-link {
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--color-text-light);
   font-size: 14px;
-  margin-bottom: 30px;
+  margin-bottom: 32px;
 }
 
 .auth-link a {
@@ -227,32 +276,97 @@ input:focus {
 }
 
 .auth-link a:hover {
-  text-decoration: underline;
+  color: var(--color-secondary);
 }
 
 .demo-credentials {
-  margin-top: 0;
-  padding: 20px;
-  background: linear-gradient(135deg, rgba(25, 118, 210, 0.05) 0%, rgba(25, 118, 210, 0.02) 100%);
-  border: 2px solid rgba(25, 118, 210, 0.2);
-  border-radius: 8px;
+  padding: 24px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.05));
+  border: 2px solid rgba(99, 102, 241, 0.15);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.demo-header {
   font-size: 13px;
-}
-
-.demo-credentials p {
-  margin: 8px 0;
-  color: var(--color-text);
-  line-height: 1.6;
-}
-
-.demo-credentials strong {
+  font-weight: 700;
   color: var(--color-primary);
-  font-weight: 600;
-  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
   margin-bottom: 8px;
 }
 
-.demo-credentials p:first-child {
-  margin-top: 0;
+.credential-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  background: white;
+  border-radius: var(--radius-md);
+  border: 1px solid rgba(99, 102, 241, 0.1);
+  transition: all var(--transition);
+}
+
+.credential-item:hover {
+  border-color: rgba(99, 102, 241, 0.3);
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1);
+}
+
+.credential-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+}
+
+.credential-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.credential-value {
+  font-size: 13px;
+  color: var(--color-text);
+  font-family: 'Courier New', monospace;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.credential-actions {
+  display: flex;
+  gap: 8px;
+  margin-left: 12px;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+  cursor: pointer;
+  font-size: 18px;
+  transition: all var(--transition);
+  padding: 0;
+}
+
+.copy-btn:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+  transform: scale(1.1);
+}
+
+.copy-btn:active {
+  transform: scale(0.95);
 }
 </style>

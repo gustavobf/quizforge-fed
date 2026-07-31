@@ -108,123 +108,161 @@ async function handleDeleteAccount() {
 
 <style scoped>
 .profile-container {
-  max-width: 600px;
-  margin: 40px auto;
+  max-width: 700px;
+  margin: 32px auto;
   padding: 20px;
 }
 
 .profile-card {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  padding: 40px;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--color-border);
+  padding: 48px;
 }
 
 h1 {
-  margin-bottom: 30px;
+  margin-bottom: 40px;
   color: var(--color-text);
+  font-size: 32px;
+  font-weight: 800;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .loading {
   text-align: center;
-  padding: 40px 20px;
-  color: var(--color-text-secondary);
+  padding: 60px 20px;
+  color: var(--color-text-light);
+  font-size: 16px;
 }
 
 .profile-info {
   margin-bottom: 40px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.03));
+  padding: 32px;
+  border-radius: var(--radius-lg);
+  border: 2px solid rgba(99, 102, 241, 0.1);
 }
 
 .info-group {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
+}
+
+.info-group:last-child {
+  margin-bottom: 0;
 }
 
 .info-group label {
   display: block;
   font-weight: 600;
   color: var(--color-text);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .info-group p {
   margin: 0;
-  color: var(--color-text-secondary);
-  padding: 10px;
-  background: #f5f5f5;
-  border-radius: 4px;
+  color: var(--color-text);
+  padding: 12px 16px;
+  background: white;
+  border-radius: var(--radius-md);
+  border: 2px solid var(--color-border);
+  font-weight: 500;
 }
 
 .badge {
   display: inline-block;
-  padding: 4px 12px;
+  padding: 6px 14px;
   border-radius: 20px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+  border: 2px solid rgba(99, 102, 241, 0.3);
 }
 
 .badge-admin {
-  background: #fff3cd;
-  color: #856404;
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(251, 146, 60, 0.15));
+  border: 2px solid rgba(245, 158, 11, 0.3);
+  color: #b45309;
 }
 
 .badge-user {
-  background: #d1ecf1;
-  color: #0c5460;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.15));
+  border: 2px solid rgba(16, 185, 129, 0.3);
+  color: #047857;
 }
 
 .action-buttons {
   display: flex;
-  gap: 10px;
+  gap: 12px;
   margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.btn-secondary,
+.btn-danger {
+  flex: 1;
+  min-width: 140px;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all var(--transition);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .btn-secondary {
-  flex: 1;
-  padding: 12px;
-  background: #f0f0f0;
+  background: linear-gradient(135deg, var(--color-border-light), var(--color-bg));
   color: var(--color-text);
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.3s;
+  border: 2px solid var(--color-border);
 }
 
 .btn-secondary:hover {
-  background: #e0e0e0;
+  background: var(--color-border);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 .btn-danger {
-  flex: 1;
-  padding: 12px;
-  background: #f44336;
+  background: linear-gradient(135deg, #ef4444, #dc2626);
   color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: 500;
-  transition: background 0.3s;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 .btn-danger:hover {
-  background: #d32f2f;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
 }
 
 .btn-delete {
   width: 100%;
-  padding: 12px;
-  background: transparent;
-  color: #f44336;
-  border: 1px solid #f44336;
-  border-radius: 4px;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
+  color: var(--color-danger);
+  border: 2px solid var(--color-danger);
+  border-radius: var(--radius-md);
   cursor: pointer;
-  font-weight: 500;
-  transition: all 0.3s;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all var(--transition);
 }
 
 .btn-delete:hover {
-  background: #ffebee;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
 }
 
 .modal-overlay {
@@ -238,25 +276,28 @@ h1 {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(4px);
 }
 
 .modal-content {
   background: white;
-  border-radius: 8px;
-  padding: 30px;
+  border-radius: var(--radius-lg);
+  padding: 40px;
   max-width: 400px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
 .modal-content h2 {
-  margin-bottom: 15px;
+  margin-bottom: 16px;
   color: var(--color-text);
+  font-size: 20px;
 }
 
 .modal-content p {
-  margin-bottom: 25px;
-  color: var(--color-text-secondary);
-  line-height: 1.5;
+  margin-bottom: 30px;
+  color: var(--color-text-light);
+  line-height: 1.6;
+  font-size: 15px;
 }
 
 .modal-actions {

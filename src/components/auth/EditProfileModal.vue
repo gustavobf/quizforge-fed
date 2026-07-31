@@ -137,88 +137,105 @@ async function handleSubmit() {
   align-items: center;
   justify-content: center;
   z-index: 1000;
+  backdrop-filter: blur(4px);
 }
 
 .modal-content {
   background: white;
-  border-radius: 8px;
-  padding: 30px;
+  border-radius: var(--radius-lg);
+  padding: 40px;
   max-width: 450px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }
 
 h2 {
-  margin-bottom: 25px;
+  margin-bottom: 30px;
   color: var(--color-text);
+  font-size: 20px;
+  font-weight: 700;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 label {
   display: block;
-  font-weight: 500;
-  margin-bottom: 8px;
+  font-weight: 600;
+  margin-bottom: 10px;
   color: var(--color-text);
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 input {
   width: 100%;
-  padding: 10px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
+  padding: 12px 16px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 14px;
   box-sizing: border-box;
-  transition: border-color 0.2s;
+  transition: all var(--transition);
+  background: var(--color-bg);
 }
 
 input:focus {
   outline: none;
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.1);
+  background: white;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
 }
 
 .error-text {
   color: var(--color-danger);
-  font-size: 12px;
-  margin-top: 4px;
+  font-size: 13px;
+  margin-top: 8px;
   display: block;
+  font-weight: 500;
 }
 
 .error-box {
-  background: #ffebee;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
   color: var(--color-danger);
-  padding: 12px;
-  border-radius: 4px;
-  margin-bottom: 20px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
   font-size: 14px;
   border-left: 4px solid var(--color-danger);
+  font-weight: 500;
 }
 
 .modal-actions {
   display: flex;
-  gap: 10px;
-  margin-top: 25px;
+  gap: 12px;
+  margin-top: 30px;
 }
 
 .modal-actions button {
   flex: 1;
-  padding: 12px;
+  padding: 12px 24px;
   border: none;
-  border-radius: 4px;
+  border-radius: var(--radius-md);
   cursor: pointer;
-  font-weight: 500;
-  transition: background 0.3s;
+  font-weight: 600;
+  font-size: 14px;
+  transition: all var(--transition);
 }
 
 .btn-primary {
-  background: var(--color-primary);
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
+  box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background: var(--color-primary-dark);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
 }
 
 .btn-primary:disabled {
@@ -227,12 +244,14 @@ input:focus {
 }
 
 .btn-secondary {
-  background: #f0f0f0;
+  background: linear-gradient(135deg, var(--color-border-light), var(--color-bg));
   color: var(--color-text);
-  border: 1px solid #ddd;
+  border: 2px solid var(--color-border);
 }
 
 .btn-secondary:hover {
-  background: #e0e0e0;
+  background: var(--color-border);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 </style>

@@ -165,20 +165,33 @@ async function handleRegister() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1976d2 0%, #1565c0 50%, #0d47a1 100%);
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
   padding: 20px;
   min-height: 100vh;
   overflow-y: auto;
 }
 
+.auth-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1), transparent),
+              radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1), transparent);
+  pointer-events: none;
+}
+
 .auth-card {
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
   padding: 50px;
   width: 100%;
   max-width: 480px;
-  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
 }
 
 h1 {
@@ -187,100 +200,115 @@ h1 {
   color: var(--color-text);
   font-size: 32px;
   font-weight: 700;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
   display: flex;
   flex-direction: column;
 }
 
 label {
-  font-weight: 500;
-  margin-bottom: 8px;
+  font-weight: 600;
+  margin-bottom: 10px;
   color: var(--color-text);
-  font-size: 15px;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 input {
-  padding: 12px 16px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
+  padding: 14px 16px;
+  border: 2px solid var(--color-border);
+  border-radius: var(--radius-md);
   font-size: 15px;
-  transition: all 0.3s;
-  background: #f9f9f9;
+  transition: all var(--transition);
+  background: var(--color-bg);
 }
 
 input:focus {
   outline: none;
   border-color: var(--color-primary);
   background: white;
-  box-shadow: 0 0 0 4px rgba(25, 118, 210, 0.1);
+  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
 }
 
 .error-text {
   color: var(--color-danger);
   font-size: 13px;
-  margin-top: 6px;
+  margin-top: 8px;
   font-weight: 500;
 }
 
 .password-requirements {
   font-size: 12px;
-  margin-top: 8px;
-  padding: 10px;
-  background: #f5f5f5;
-  border-radius: 4px;
+  margin-top: 12px;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.05));
+  border: 1px solid rgba(99, 102, 241, 0.15);
+  border-radius: var(--radius-md);
 }
 
 .password-requirements p {
-  margin: 4px 0;
-  color: var(--color-text-secondary);
+  margin: 6px 0;
+  color: var(--color-text-light);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .password-requirements p.valid {
   color: var(--color-success);
+  font-weight: 500;
 }
 
 .error-box {
-  background: #ffebee;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(239, 68, 68, 0.05));
   color: var(--color-danger);
-  padding: 14px 16px;
-  border-radius: 6px;
-  margin-bottom: 20px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
   font-size: 14px;
-  border-left: 5px solid var(--color-danger);
+  border-left: 4px solid var(--color-danger);
+  font-weight: 500;
 }
 
 .btn-primary {
   width: 100%;
-  padding: 13px;
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
+  padding: 14px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
   color: white;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-md);
   font-weight: 600;
   cursor: pointer;
-  transition: all 0.3s;
-  margin-bottom: 20px;
+  transition: all var(--transition);
+  margin-bottom: 24px;
   font-size: 15px;
-  box-shadow: 0 4px 15px rgba(25, 118, 210, 0.3);
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
 }
 
 .btn-primary:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(25, 118, 210, 0.4);
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.4);
+}
+
+.btn-primary:active:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 .btn-primary:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  transform: none;
 }
 
 .auth-link {
   text-align: center;
-  color: var(--color-text-secondary);
+  color: var(--color-text-light);
   font-size: 14px;
 }
 
@@ -291,6 +319,6 @@ input:focus {
 }
 
 .auth-link a:hover {
-  text-decoration: underline;
+  color: var(--color-secondary);
 }
 </style>

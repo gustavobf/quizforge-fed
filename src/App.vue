@@ -52,23 +52,28 @@ async function handleLogout() {
 }
 
 #app {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   min-height: 100vh;
+  background: var(--color-bg);
 }
 
 nav {
-  background: #1976d2;
-  padding: 15px 20px;
+  background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+  padding: 16px 20px;
   display: flex;
   justify-content: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
 .nav-container {
   max-width: 1200px;
   width: 100%;
   display: flex;
-  gap: 20px;
+  gap: 30px;
   justify-content: space-between;
   align-items: center;
 }
@@ -76,120 +81,112 @@ nav {
 .nav-left,
 .nav-right {
   display: flex;
-  gap: 20px;
+  gap: 24px;
   align-items: center;
 }
 
-nav a,
-.nav-logout {
-  color: white;
+nav a {
+  color: var(--color-text-light);
   text-decoration: none;
-  font-weight: bold;
-  padding: 4px 12px;
-  border-radius: 4px;
-  transition: background 0.2s;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  transition: all var(--transition);
   border: none;
   background: none;
   cursor: pointer;
-  font-size: 14px;
 }
 
-nav a:hover,
-.nav-logout:hover {
-  background: rgba(255, 255, 255, 0.1);
-  text-decoration: none;
+nav a:hover {
+  color: var(--color-primary);
+  background: rgba(99, 102, 241, 0.08);
 }
 
 nav a.router-link-active {
-  background: rgba(255, 255, 255, 0.2);
-  text-decoration: none;
-}
-
-.user-info {
-  color: white;
-  font-weight: 500;
-  font-size: 14px;
-}
-
-.nav-profile {
-  padding: 4px 12px !important;
+  color: var(--color-primary);
+  background: rgba(99, 102, 241, 0.12);
+  font-weight: 600;
 }
 
 .nav-logout {
-  padding: 4px 12px;
+  color: var(--color-text-light);
+  text-decoration: none;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: all var(--transition);
 }
 
+.nav-logout:hover {
+  color: var(--color-danger);
+  background: rgba(239, 68, 68, 0.08);
+}
+
+.user-info {
+  color: var(--color-text);
+  font-weight: 600;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-info::before {
+  content: '👤';
+  font-size: 16px;
+}
+
+.nav-profile,
+.nav-logout {
+  padding: 8px 16px;
+}
 
 main {
-  padding: 20px;
+  padding: 32px 20px;
   max-width: 1200px;
   margin: 0 auto;
-}
-
-.btn-primary {
-  background: #1976d2;
-  color: white;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-primary:hover:not(:disabled) {
-  background: #1565c0;
-}
-
-.btn-primary:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.btn-secondary {
-  background: #e0e0e0;
-  color: #2c3e50;
-  border: none;
-  padding: 10px 24px;
-  border-radius: 6px;
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.btn-secondary:hover {
-  background: #d0d0d0;
-}
-
-a {
-  color: #1976d2;
-  text-decoration: none;
-}
-
-a:hover {
-  text-decoration: underline;
 }
 
 input:focus, 
 select:focus, 
 textarea:focus {
-  border-color: #1976d2 !important;
+  border-color: var(--color-primary) !important;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1) !important;
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 4px solid #e0e0e0;
-  border-top-color: #1976d2;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+.btn-delete {
+  background: var(--color-danger);
+  color: white;
+  border: none;
+  padding: 12px 28px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.btn-delete:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
 }
 </style>
