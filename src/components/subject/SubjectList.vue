@@ -20,7 +20,9 @@
     <div v-else-if="subjectStore.subjects.length === 0" class="empty">
       <span class="empty-icon">📭</span>
       <p>No subjects created yet</p>
-      <button @click="openCreateModal" class="btn-primary">Create your first subject</button>
+      <button @click="openCreateModal" class="btn-primary">
+        Create your first subject
+      </button>
     </div>
 
     <div v-else class="subjects-grid">

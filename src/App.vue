@@ -1,11 +1,21 @@
 <template>
   <div id="app">
-    <nav>
+    <nav v-if="authStore.isAuthenticated">
       <div class="nav-container">
-        <router-link to="/">Home</router-link>
-        <router-link to="/subjects">Subjects</router-link>
-        <router-link to="/questions">Questions</router-link>
-        <router-link to="/history">History</router-link>
+        <div class="nav-left">
+          <router-link to="/">Home</router-link>
+          <router-link to="/subjects">Subjects</router-link>
+          <router-link to="/questions">Questions</router-link>
+          <router-link to="/history">History</router-link>
+          <template v-if="authStore.isAdmin">
+            <router-link to="/admin/users">Users</router-link>
+          </template>
+        </div>
+        <div class="nav-right">
+          <span class="user-info">{{ authStore.userName }}</span>
+          <router-link to="/profile" class="nav-profile">Profile</router-link>
+          <button @click="handleLogout" class="nav-logout">Logout</button>
+        </div>
       </div>
     </nav>
     <main>
@@ -16,7 +26,22 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import AppToast from '@/components/common/AppToast.vue'
+import { useAuthStore } from '@/stores/authStore'
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+onMounted(() => {
+  authStore.restoreFromStorage()
+})
+
+async function handleLogout() {
+  await authStore.logout()
+  router.push('/login')
+}
 </script>
 
 <style>
@@ -44,19 +69,33 @@ nav {
   width: 100%;
   display: flex;
   gap: 20px;
-  justify-content: center;
+  justify-content: space-between;
+  align-items: center;
 }
 
-nav a {
+.nav-left,
+.nav-right {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+nav a,
+.nav-logout {
   color: white;
   text-decoration: none;
   font-weight: bold;
   padding: 4px 12px;
   border-radius: 4px;
   transition: background 0.2s;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 14px;
 }
 
-nav a:hover {
+nav a:hover,
+.nav-logout:hover {
   background: rgba(255, 255, 255, 0.1);
   text-decoration: none;
 }
@@ -65,6 +104,21 @@ nav a.router-link-active {
   background: rgba(255, 255, 255, 0.2);
   text-decoration: none;
 }
+
+.user-info {
+  color: white;
+  font-weight: 500;
+  font-size: 14px;
+}
+
+.nav-profile {
+  padding: 4px 12px !important;
+}
+
+.nav-logout {
+  padding: 4px 12px;
+}
+
 
 main {
   padding: 20px;
